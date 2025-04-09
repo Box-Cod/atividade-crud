@@ -103,8 +103,23 @@ public class Personagem {
 
     public void setItems(List<Item> items) {
         try {
+
+            if (items.size() < 0) {
+                throw new RuntimeException("Personagem não pode ter menos que 0 itens");
+            }
+
             if (items.size() > 3) {
                 throw new RuntimeException("Personagem não pode ter mais que 3 itens");
+            }
+
+            int countAmuleto = 0;
+            for (Item item : items) {
+                if (item.getTipo() == ItemEnum.AMULETO) {
+                    countAmuleto++;
+                }
+                if (countAmuleto > 1) {
+                    throw new RuntimeException("Personagem não pode ter mais que um Item do tipo Amuleto");
+                }
             }
 
             this.items = items;

@@ -10,5 +10,29 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String tipo;
+    private ItemEnum tipo;
+
+    public Item() {
+    }
+
+    public Item(Long id, ItemEnum tipo) {
+        this.id = id;
+        this.tipo = tipo;
+    }
+
+    public Item(ItemEnum tipo) {
+        this.tipo = tipo;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setTipo(ItemEnum tipo) {
+        this.tipo = tipo;
+    }
+
+    public ItemEnum getTipo() {
+        return tipo;
+    }
 }
