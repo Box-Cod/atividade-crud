@@ -1,4 +1,4 @@
-package com.example.atividade_crude.model;
+package com.example.atividade_crude.enums;
 
 public enum ItemEnum {
     ARMA,

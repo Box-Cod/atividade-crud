@@ -1,38 +1,80 @@
 package com.example.atividade_crude.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.atividade_crude.enums.ClasseEnum;
+import com.example.atividade_crude.enums.ItemEnum;
+import jakarta.persistence.*;
+
 
 import java.util.List;
 
 @Entity
+@Table (name = "tb_personagem")
 public class Personagem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="personagem_id")
+    @SequenceGenerator(
+            name = "personagem_sequence",
+            sequenceName = "personagem_sequence",
+            allocationSize = 1
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "personagem_sequence"
+    )
     private Long id;
 
+    @Column(
+            name = "nome",
+            nullable = false
+    )
     private String nome;
 
+    @Column(
+            name = "nome_aventureiro",
+            nullable = false
+    )
     private String nomeAventureiro;
 
-    private Classe classe;
+    @Enumerated(EnumType.STRING)
+    @PrimaryKeyJoinColumn(name = "fk_classe")
+    @OneToOne
+    @JoinColumn(
+            name = "fk_classe",
+            referencedColumnName = "classe_id"
+    )
+    private ClasseEnum classe;
 
+    @Column(
+            name = "level",
+            nullable = false
+    )
     private int level;
 
+    @OneToMany
+    @JoinColumn(
+            name = "item_id",
+            referencedColumnName = "item_id"
+    )
     private List<Item> items;
 
+    @Column(
+            name = "forca",
+            nullable = false
+    )
     private int forca;
 
+    @Column(
+            name = "defesa",
+            nullable = false
+    )
     private int defesa;
 
     public Personagem() {
 
     }
 
-    public Personagem(Long id, String nome, String nomeAventureiro, Classe classe, int level, List<Item> items, int forca, int defesa) {
+    public Personagem(Long id, String nome, String nomeAventureiro, ClasseEnum classe, int level, List<Item> items, int forca, int defesa) {
         this.id = id;
         this.nome = nome;
         this.nomeAventureiro = nomeAventureiro;
@@ -43,7 +85,7 @@ public class Personagem {
         this.defesa = defesa;
     }
 
-    public Personagem(String nome, String nomeAventureiro, Classe classe, int level, List<Item> items, int forca, int defesa) {
+    public Personagem(String nome, String nomeAventureiro, ClasseEnum classe, int level, List<Item> items, int forca, int defesa) {
         this.nome = nome;
         this.nomeAventureiro = nomeAventureiro;
         this.classe = classe;
@@ -65,7 +107,7 @@ public class Personagem {
         return nomeAventureiro;
     }
 
-    public Classe getClasse() {
+    public ClasseEnum getClasse() {
         return classe;
     }
 
@@ -86,19 +128,55 @@ public class Personagem {
     }
 
     public void setNome(String nome) {
-        this.nome = nome;
+        try {
+            if (nome.length() <= 1) {
+                throw new RuntimeException("Nome não pode ter menos que um caractere");
+            }
+
+            if (nome.isEmpty() || nome.isBlank()) {
+                throw new RuntimeException("Nome não pode ser vazio conter sómente um espaço em branco");
+            }
+
+            this.nome = nome;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setNomeAventureiro(String nomeAventureiro) {
-        this.nomeAventureiro = nomeAventureiro;
+        try {
+            if (nomeAventureiro.length() <= 1) {
+                throw new RuntimeException("Nome do aventureiro não pode ter menos que um caractere");
+            }
+
+            if (nomeAventureiro.isEmpty() || nomeAventureiro.isBlank()) {
+                throw new RuntimeException("Nome do Aventureiro não pode ser vazio conter sómente um espaço em branco");
+            }
+
+            this.nomeAventureiro = nomeAventureiro;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void setClasse(Classe classe) {
+    public void setClasse(ClasseEnum classe) {
         this.classe = classe;
     }
 
     public void setLevel(int level) {
-        this.level = level;
+        try {
+
+            if (level < 0) {
+                throw new RuntimeException("Level não pode ser menor que zero");
+            }
+
+            this.level = level;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setItems(List<Item> items) {
