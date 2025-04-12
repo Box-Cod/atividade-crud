@@ -8,66 +8,27 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table (name = "tb_personagem")
 public class Personagem {
 
     @Id
-    @Column(name="personagem_id")
-    @SequenceGenerator(
-            name = "personagem_sequence",
-            sequenceName = "personagem_sequence",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "personagem_sequence"
-    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(
-            name = "nome",
-            nullable = false
-    )
     private String nome;
 
-    @Column(
-            name = "nome_aventureiro",
-            nullable = false
-    )
     private String nomeAventureiro;
 
-    @Enumerated(EnumType.STRING)
-    @PrimaryKeyJoinColumn(name = "fk_classe")
-    @OneToOne
-    @JoinColumn(
-            name = "fk_classe",
-            referencedColumnName = "classe_id"
-    )
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     private ClasseEnum classe;
 
-    @Column(
-            name = "level",
-            nullable = false
-    )
     private int level;
 
-    @OneToMany
-    @JoinColumn(
-            name = "item_id",
-            referencedColumnName = "item_id"
-    )
+    @OneToMany(fetch = FetchType.LAZY, targetEntity = Item.class, cascade = CascadeType.PERSIST)
     private List<Item> items;
 
-    @Column(
-            name = "forca",
-            nullable = false
-    )
     private int forca;
 
-    @Column(
-            name = "defesa",
-            nullable = false
-    )
     private int defesa;
 
     public Personagem() {
@@ -115,6 +76,7 @@ public class Personagem {
         return level;
     }
 
+    @ElementCollection(targetClass = Item.class)
     public List<Item> getItems() {
         return items;
     }
@@ -191,16 +153,82 @@ public class Personagem {
             }
 
             int countAmuleto = 0;
+            int totalForcaItens = 0;
+            int totalDefesaItens = 0;
+
             for (Item item : items) {
+
                 if (item.getTipo() == ItemEnum.AMULETO) {
                     countAmuleto++;
                 }
+
                 if (countAmuleto > 1) {
                     throw new RuntimeException("Personagem não pode ter mais que um Item do tipo Amuleto");
                 }
+
+                if (item.getForca() > 10) {
+                    throw new RuntimeException("Personagem não pode um Item com Pontos de Força maior que 10");
+                }
+
+                if (item.getDefesa() > 10) {
+                    throw new RuntimeException("Personagem não pode um Item com Pontos de Defesa maior que 10");
+                }
+
+                if (item.getTipo() == ItemEnum.ARMA) {
+
+                    if (item.getForca() <= 0) {
+                        throw new RuntimeException("Personagem não pode um Item com Pontos de Força menor ou igual a 0");
+                    }
+
+                    if (item.getForca() > 10) {
+                        throw new RuntimeException("Personagem não pode um Item com Pontos de Força maior que 10");
+                    }
+                }
+
+                if (item.getTipo() == ItemEnum.ARMADURA) {
+
+                    if (item.getDefesa() <= 0) {
+                        throw new RuntimeException("Personagem não pode um Item com Pontos de Defesa menor ou igual a 0");
+                    }
+
+                    if (item.getDefesa() > 10) {
+                        throw new RuntimeException("Personagem não pode um Item com Pontos de Defesa maior que 10");
+                    }
+                }
+
+
+                for (Item itens : items) {
+                    totalForcaItens += item.getForca();
+                    totalDefesaItens += item.getDefesa();
+                }
+
+                if (item.getTipo() == ItemEnum.ARMA) {
+
+                    if (totalForcaItens > 10) {
+                        throw new RuntimeException("Personagem não pode ter a soma de seus Itens de Força maior que 10");
+                    }
+
+                    if (totalForcaItens <= 0) {
+                        throw new RuntimeException("Personagem não pode ter a soma de seus Itens de Força menor ou igual a 0");
+                    }
+
+                }
+
+                if (item.getTipo() == ItemEnum.ARMADURA) {
+
+                    if (totalDefesaItens > 10) {
+                        throw new RuntimeException("Personagem não pode ter a soma de seus Itens de Defesa maior que 10");
+                    }
+
+                    if (totalDefesaItens <= 0) {
+                        throw new RuntimeException("Personagem não pode ter a soma de seus Itens de Defesa menor ou igual a 0");
+                    }
+                }
+
             }
 
             this.items = items;
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -217,15 +245,28 @@ public class Personagem {
                 throw new RuntimeException("Força não pode ser maior que 10");
             }
 
-            if ((forca - getDefesa()) < 0) {
-                throw new RuntimeException("A diferença entre Força e Defesa não pode ser menor que zero");
+            int totalForcaItens = 0;
+            int totalForca = 0;
+
+            for (Item item: items) {
+                totalForcaItens += item.getForca();
             }
 
-            if ((forca - getDefesa()) > 10) {
-                throw new RuntimeException("A diferença entre Força e Defesa não pode ser maior que 10");
+            if (totalForcaItens == 10) {
+                throw new RuntimeException("Personagem já possui o maximo de Pontos de Força");
             }
 
-            this.forca = forca;
+            totalForca = totalForcaItens + forca;
+
+            if (totalForca > 10) {
+                throw new RuntimeException("O Personagem possui um total de "+totalForcaItens+" pontos de Força de itens, passe um valor que somado não ultrapasse 10 pontos");
+            }
+
+            if (totalForca <= 0) {
+                throw new RuntimeException("O Personagem possui um total de "+totalForcaItens+" pontos de Força de itens, passe um valor que somado não seja maior que 0 pontos");
+            }
+
+            this.forca = totalForca;
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -233,25 +274,38 @@ public class Personagem {
 
     }
 
-    public void setDefesa(int defesa) {
+    public void setDefesa(int valorDefesa) {
         try {
-            if(defesa < 0) {
+            if(valorDefesa < 0) {
                 throw new RuntimeException("Defesa não pode ser menor que zero");
             }
 
-            if(defesa > 10) {
+            if(valorDefesa > 10) {
                 throw new RuntimeException("Defesa não pode ser maior que 10");
             }
 
-            if ((defesa - getForca()) < 0) {
-                throw new RuntimeException("A diferença entre Defesa e Força não pode ser menor que zero");
+            int totalDefesaItens = 0;
+            int totalDefesa = 0;
+
+            for (Item item: this.items) {
+                totalDefesaItens += item.getDefesa();
             }
 
-            if ((defesa - getForca()) > 10) {
-                throw new RuntimeException("A diferença entre Defesa e Força não pode ser maior que 10");
+            if (totalDefesaItens == 10) {
+                throw new RuntimeException("Personagem já possui o maximo de Pontos de Defesa");
             }
 
-            this.defesa = defesa;
+            totalDefesa = totalDefesaItens + valorDefesa;
+
+            if (totalDefesa > 10) {
+                throw new RuntimeException("O Personagem possui um total de (itens ->"+totalDefesaItens+") (valor defesa ->"+valorDefesa+") (total ->"+totalDefesa+") pontos de Defesa de itens, passe um valor que somado não ultrapasse 10 pontos");
+            }
+
+            if (totalDefesa < 0) {
+                throw new RuntimeException("O Personagem possui um total de "+totalDefesaItens+" pontos de Defesa de itens, passe um valor que somado não seja maior que 0 pontos");
+            }
+
+            this.defesa = totalDefesa;
 
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 public class Item {
 
     @Id
-    @Column(name="item_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -71,6 +70,7 @@ public class Item {
             switch (this.tipo) {
 
                 case ARMA:
+
                     if (forca <= 0) {
                         throw new RuntimeException("A Força do item não pode ser menor ou igual a 0");
                     }
@@ -78,11 +78,13 @@ public class Item {
                     if (forca > 10) {
                         throw new RuntimeException("A Força do item não pode ser maior que 10");
                     }
+
                     this.defesa = 0;
                     this.forca = forca;
                 break;
 
                 case AMULETO:
+
                     if (forca < 0) {
                         throw new RuntimeException("A Força do Amuleto não pode ser menor menor ou igual a 0");
                     }
@@ -91,13 +93,8 @@ public class Item {
                         throw new RuntimeException("A Força do Amuleto não pode ser maior que 10");
                     }
 
-                    if ((this.forca - this.defesa) > 10 || (this.forca - this.defesa) <= 0) {
-                        throw new RuntimeException("A diferença entre Força e Defesa do Amuleto não pode der maior que 10 ou menor que 0 ");
-                    }
-
                     this.forca = forca;
-                    int diferença = forca - getDefesa();
-                    setDefesa(diferença);
+
                 break;
             }
 
@@ -113,6 +110,7 @@ public class Item {
             switch (this.tipo) {
 
                 case ARMADURA:
+
                     if (defesa <= 0) {
                         throw new RuntimeException("A Defesa do item não pode ser menor ou igual a 0");
                     }
@@ -120,11 +118,13 @@ public class Item {
                     if (defesa > 10) {
                         throw new RuntimeException("A Defesa do item não pode ser maior que 10");
                     }
+
                     this.defesa = defesa;
                     this.forca = 0;
                 break;
 
                 case AMULETO:
+
                     if (defesa <= 0) {
                         throw new RuntimeException("A Defesa do Amuleto não pode ser menor ou igual a 0");
                     }
@@ -133,13 +133,7 @@ public class Item {
                         throw new RuntimeException("A Defesa do Amuleto não pode ser maior que 10");
                     }
 
-                    if ((this.defesa - this.forca) > 10 || (this.defesa - this.forca) <= 0) {
-                        throw new RuntimeException("A diferença entre Defesa e Força do Amuleto não pode der maior que 10 ou menor ou igual a 0 ");
-                    }
-
                     this.defesa = defesa;
-                    int diferença = defesa - getForca();
-                    setForca(diferença);
 
                 break;
             }

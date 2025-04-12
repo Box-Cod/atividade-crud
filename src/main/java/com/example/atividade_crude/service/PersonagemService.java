@@ -24,8 +24,7 @@ public class PersonagemService {
     }
 
     public Personagem create(Personagem personagem) {
-        personagemRepository.save(personagem);
-        return personagem;
+        return personagemRepository.save(personagem);
     }
 
     public Personagem update(Personagem personagem, Long id) {
